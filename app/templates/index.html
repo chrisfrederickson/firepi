@@ -40,6 +40,10 @@
             <div id='generate'>
                 <h2 id='generateHeader'>Or you can</h2>
                 Generate your own temperature profile
+                
+                <div id='functionGenerator'>
+                
+                </div>
             </div>
         </div>
         
@@ -49,6 +53,7 @@
                 if(loggedIn) {
                     document.getElementById("auth").style.display = 'block';
                     document.getElementById("noauth").style.display = 'none';
+                    refreshFunctionGenerator();
                 }
             }   
             document.getElementById('authenticate').onclick = function(event) {
@@ -122,6 +127,7 @@
                             temperatureProfile.addRow(row);
                         }
                         console.log(temperatureProfile);
+                        refreshFunctionGenerator();
                     };
                   })(file);
 
@@ -142,13 +148,56 @@
               dropZone.addEventListener('dragover', handleDragOver, false);
               dropZone.addEventListener('drop', handleFileDNDSelect, false);
             
-            //Function Generator
+            //FUNCTION GENERATOR
+            function refreshFunctionGenerator() {
+                out = "";
+                for(var i = 0, r; r = temperatureProfile.getRows()[i]; i++) {
+                    out += addFunction(r);   
+                }
+                out += addFunction();
+                out += "<button onclick='newPiecewiseFunction'>Add</button>";
+                
+                document.getElementById('functionGenerator').innerHTML = out;
+            }
+            //Generates UI for another piecewise element
+            function addFunction(CSVrow) {
+                out = "Temperature (Celcius): <input class='temperatureInput' type='number' min='-40' max='120' step='0.1' value='"+(CSVrow !== undefined?CSVrow.getColumn(0):25)+"'>";
+                out += "Duration (seconds): <input class='secondInput' type='number' min='0' max='3600' step='1' value='"+(CSVrow !== undefined?CSVrow.getColumn(1):120)+"'>";
+                return out;
+            }
+            //Manually adds a new element to the piecewise function
+            function newPiecewiseFunction() {
+                flush();
+                refreshFunctionGenerator();
+            }
+            //Turns all inputs into a CSV object and sets that to the global temperatureProfile
+            function flush() {
+                temperatureProfile = new CSV();
+                for(var i = 0, temp; temp = document.getElementsByClassName('temperatureInput')[i]; i++) {
+                    var second = document.getElementsByClassName('secondInput')[i];
+                    console.log(temp);
+                    console.log(second);
+                    var row = new CSVRow();
+                    row.setColumn(0, temp.value);
+                    row.setColumn(1, second.value);
+                    temperatureProfile.addRow(row);
+                }
+            }
             
             //MODELS            
             function CSV() {
                 this.rows = [];   
                 this.addRow = function(row) {
                     this.rows[this.rows.length] = row;   
+                }
+                this.getRowCount = function() {
+                    return this.rows.length;
+                }   
+                this.isEmpty = function() {
+                    return this.getRowCount() == 0;   
+                }
+                this.getRows = function() {
+                    return this.rows;   
                 }
             }
             function CSVRow() {
@@ -157,6 +206,9 @@
                     newLineRegex = new RegExp('[\n\r]+', 'g');
                     string = string.replace(newLineRegex, "");
                     this.columns = string.split(',');   
+                }
+                this.setColumn = function(pos, input) {
+                    this.columns[pos] = input;   
                 }
                 this.getColumns = function() {
                     return this.columns;   
