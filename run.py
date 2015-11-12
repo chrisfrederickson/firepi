@@ -1,3 +1,4 @@
 from app import app
 
-app.run()
+#COM fails with reloader enabled
+app.run(debug=True, use_reloader=False)

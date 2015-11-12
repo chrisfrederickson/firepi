@@ -15,5 +15,8 @@ class TempChamber:
         formatted_temp = int(temp*10)
         self.instrument.write_register(300, formatted_temp, 0, 16, False)
     
+    def set_temp_curve(self):
+        pass
+    
     def read_temp(self):
         return self.instrument.read_register(100, 1, 3, False)
