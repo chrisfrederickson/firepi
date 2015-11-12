@@ -1,0 +1,226 @@
+<html>
+    <head>
+        <title>FirePi - Temperature Chamber Web Server</title>
+        <link href='https://fonts.googleapis.com/css?family=Roboto:400,500,700,300,100' rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        <style>
+            body {
+                background-color:#333;
+                color:#dedede;
+                font-family: 'Roboto', sans-serif;
+            }
+            a {
+                color: #dedede;   
+            }
+            #auth {
+                display:none;   
+            }
+            #custom {
+                border: dashed black 1px;   
+            }
+        </style>
+        <h1>FirePi - Temperature Chamber Web Server</h1>
+        <p>This is a web server that controls the TestEquity Model 115 Temperature Chamber at Rowan University. Written in Python and running on a Raspberry Pi, it makes it easy to run different temperature profiles on DUTs (devices under test). Whether you want a simple linear function or a complex curve with various types of easing, it is easy to generate any sort of temperature profile here or upload your own through a CSV file. Documentation for the correct CSV format is currently not available. If you want to learn how we did it, check out <a href='https://github.com/chrisfrederickson/firepi' target='_blank'>our GitHub repo</a>. This software project is part of Firefly/Mission to Mars.</p>
+        <div id='noauth'>
+            <!-- Exists by default. The user needs to authenticate. -->
+            <p>To use the temperature chamber, you must log in with your Rowan students account.</p>
+            <button id='authenticate'>LOG IN</button>
+        </div>
+        <div id='auth'>
+            <!-- The user is authenticated, so stuff can work -->
+            <div id='custom'>
+                <h2>You can</h2>
+                Upload a custom CSV file: (format TBA)
+                <input type="file" id="customcsv">
+                <br>
+                Drag and drop a file
+                <span id='list'></span>
+            </div>
+            <div id='generate'>
+                <h2 id='generateHeader'>Or you can</h2>
+                Generate your own temperature profile
+                
+                <div id='functionGenerator'>
+                
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            var loggedIn = false;
+            function loadFunctionGenerator() {
+                if(loggedIn) {
+                    document.getElementById("auth").style.display = 'block';
+                    document.getElementById("noauth").style.display = 'none';
+                    refreshFunctionGenerator();
+                }
+            }   
+            document.getElementById('authenticate').onclick = function(event) {
+                //For now, auth doesn't matter, just hack this in
+                loggedIn = true;
+                loadFunctionGenerator();
+            }
+            if (window.File && window.FileReader && window.FileList && window.Blob) {
+                console.log("Great success! All the File APIs are supported.");
+            } else {
+                console.error("Error: You cannot do custom file uploading");
+                document.getElementById("custom").style.display = 'none';
+                document.getElementById("generateHeader").innerHTML = "You can";
+            }
+            var temperatureProfile = new CSV();
+            
+            //DND - http://www.html5rocks.com/en/tutorials/file/dndfiles/
+            function handleFileDNDSelect(evt) {
+                evt.stopPropagation();
+                evt.preventDefault();
+
+                var files = evt.dataTransfer.files; // FileList object.
+
+                // files is a FileList of File objects. List some properties.
+                for (var i = 0, f; f = files[i]; i++) {
+                    handleFile(f);
+                }
+              }
+            function handleFileUploadSelect(evt) {
+                var files = evt.target.files; // FileList object
+
+                // files is a FileList of File objects. List some properties.
+                for (var i = 0, f; f = files[i]; i++) {                  
+                    handleFile(f);
+                }
+              }
+            function handleFile(file) {
+                var output = [];
+                output.push('<li><strong>', escape(file.name), '</strong> (', file.type || 'n/a', ') - ',
+                              file.size, ' bytes, last modified: ',
+                              file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() : 'n/a',
+                              '</li>');
+                document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+                //TODO Hide the file input
+                
+                // TODO Only process csv files.
+                  /*if (!f.type.match('image.*')) {
+                    continue;
+                  }*/
+                
+                //Read the data as a string, turn it into a CSV, do some validation checks
+                
+                  var reader = new FileReader();
+                  // Closure to capture the file information.
+                  reader.onload = (function(theFile) {
+                    return function(e) {
+                        // Get CSV
+                        temperatureRaw = e.target.result;
+                        console.log(temperatureRaw);
+                        temperatureProfile = new CSV();
+                        isValidRegex = new RegExp('([\\S]+,[\\S]+[\\n\\r]+)+');
+                        if(temperatureRaw.match(isValidRegex).length != 1 && temperatureRaw.match(isValidRegex).length != 2) {
+                            alert("Invalid format");   
+                            return;
+                        }
+                        rowSplitRegex = new RegExp('[\\S]+,[\\S]+', 'g');
+                        rows = temperatureRaw.match(rowSplitRegex);
+                        for(var i = 0, r; r = rows[i]; i++) {
+                            var row = new CSVRow();
+                            row.setColumns(r);
+                            temperatureProfile.addRow(row);
+                        }
+                        console.log(temperatureProfile);
+                        refreshFunctionGenerator();
+                    };
+                  })(file);
+
+                  // Read in the image file as a data URL.
+                  reader.readAsText(file);
+            }
+
+              document.getElementById('customcsv').addEventListener('change', handleFileUploadSelect, false);
+
+              function handleDragOver(evt) {
+                  evt.stopPropagation();
+                  evt.preventDefault();
+                  evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+              }
+
+              // Setup the dnd listeners.
+              var dropZone = document.getElementById('custom');
+              dropZone.addEventListener('dragover', handleDragOver, false);
+              dropZone.addEventListener('drop', handleFileDNDSelect, false);
+            
+            //FUNCTION GENERATOR
+            function refreshFunctionGenerator() {
+                out = "";
+                for(var i = 0, r; r = temperatureProfile.getRows()[i]; i++) {
+                    out += addFunction(r);   
+                }
+                out += addFunction();
+                out += "<button onclick='newPiecewiseSegment()'>Add</button>";
+                
+                document.getElementById('functionGenerator').innerHTML = out;
+            }
+            //Generates UI for another piecewise element
+            function addFunction(CSVrow) {
+                out = "Temperature (Celcius): <input class='temperatureInput' type='number' min='-40' max='120' step='0.1' value='"+(CSVrow !== undefined?CSVrow.getColumn(0):25)+"'>";
+                out += "Duration (seconds): <input class='secondInput' type='number' min='0' max='3600' step='1' value='"+(CSVrow !== undefined?CSVrow.getColumn(1):120)+"'>";
+                out += "<br>";
+                return out;
+            }
+            //Manually adds a new element to the piecewise function
+            function newPiecewiseSegment() {
+                flush();
+                refreshFunctionGenerator();
+            }
+            //Turns all inputs into a CSV object and sets that to the global temperatureProfile
+            function flush() {
+                temperatureProfile = new CSV();
+                for(var i = 0, temp; temp = document.getElementsByClassName('temperatureInput')[i]; i++) {
+                    var second = document.getElementsByClassName('secondInput')[i];
+                    console.log(temp);
+                    console.log(second);
+                    var row = new CSVRow();
+                    row.setColumn(0, temp.value);
+                    row.setColumn(1, second.value);
+                    temperatureProfile.addRow(row);
+                }
+            }
+            
+            //MODELS            
+            function CSV() {
+                this.rows = [];   
+                this.addRow = function(row) {
+                    this.rows[this.rows.length] = row;   
+                }
+                this.getRowCount = function() {
+                    return this.rows.length;
+                }   
+                this.isEmpty = function() {
+                    return this.getRowCount() == 0;   
+                }
+                this.getRows = function() {
+                    return this.rows;   
+                }
+            }
+            function CSVRow() {
+                this.columns = [];
+                this.setColumns = function(string) {
+                    newLineRegex = new RegExp('[\n\r]+', 'g');
+                    string = string.replace(newLineRegex, "");
+                    this.columns = string.split(',');   
+                }
+                this.setColumn = function(pos, input) {
+                    this.columns[pos] = input;   
+                }
+                this.getColumns = function() {
+                    return this.columns;   
+                }
+                this.getColumnsSize = function() {
+                    return this.columns.length;   
+                }
+                this.getColumn = function(int) {
+                    return this.columns[int];   
+                }
+            }
+        </script>
+    </body>
+</html>
