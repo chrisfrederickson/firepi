@@ -30,7 +30,7 @@ Firepi uses a RESTful API
       * `{'response': 'success'}` - Returns a success if the temperature was set correctly
 
 ### Set a temperature curve
-The temperature curve is represented on the frontend and backend as a CSV file of 2 columns and `n` rows. The first column is the length of time in seconds(?) at a temperature given by the second column.
+The temperature curve is represented on the frontend and backend as a CSV file of 2 columns and `n` rows. The second column is the length of time in seconds(?) at a temperature given by the first column.
 
 |     |     |
 | --- | --- |
