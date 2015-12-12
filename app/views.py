@@ -1,15 +1,10 @@
-from app import app, tempchamber
+from app import app, chamber
 from app.auth import google, whitelist_required, admin_required
-from flask import request, url_for, redirect, flash, session, jsonify
-
-chamber = tempchamber.TempChamber()
+from flask import request, url_for, redirect, flash, session, jsonify, render_template
 
 @app.route('/')
 def home():
-    if 'google_token' in session:
-        me = google.get('userinfo')
-        return jsonify({"data": me.data})
-    return 'No user data'
+    return render_template('index.html')
 
 @app.route('/read')
 @whitelist_required
@@ -53,4 +48,4 @@ def oauth_authorized():
     session['google_token'] = (resp['access_token'], '')
     me = google.get('userinfo')
     
-    return redirect(url_for('home'))
+    return redirect(url_for('home', token=resp['access_token']))
