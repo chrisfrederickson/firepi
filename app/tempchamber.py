@@ -1,10 +1,12 @@
 import minimalmodbus
 import serial
+import csv
+from app import scheduler
 
 class TempChamber:
        
     def __init__(self):
-        self.instrument = minimalmodbus.Instrument('COM6', 1)
+        self.instrument = minimalmodbus.Instrument('COM4', 1)
         self.instrument.serial.baudrate = 19200
         self.instrument.serial.bytesize = 8
         self.instrument.serial.parity   = serial.PARITY_NONE
@@ -13,10 +15,28 @@ class TempChamber:
         
     def set_temp(self, temp):
         formatted_temp = int(temp*10)
-        self.instrument.write_register(300, formatted_temp, 0, 16, False)
+        try:
+            self.instrument.write_register(300, formatted_temp, 0, 16, False)
+        except:
+            print('Error: temperature set failure')
     
-    def set_temp_curve(self):
+    #TODO - Convert to nonblocking
+    def set_temp_curve(self, curve):
+        reader = csv.reader(curve.split('\n'), delimiter=',')
+        duration = 0;
+        last_duration = 0;
+        for row in reader:
+            temp = float(row[1])
+            last_duration = duration
+            duration = float(row[0])
+            scheduler.enter(last_duration, 1, self.set_temp, [temp])
+        scheduler.run()
+    
+    def get_running_temp_curve(self):
         pass
     
     def read_temp(self):
-        return self.instrument.read_register(100, 1, 3, False)
+        try:
+            return self.instrument.read_register(100, 1, 3, False)
+        except:
+            print('Error: temperature read failure')

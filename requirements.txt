@@ -1,1 +1,4 @@
 flask
+flask-oauthlib
+minimalmodbus
+flask-restful
