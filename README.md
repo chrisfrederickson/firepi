@@ -30,18 +30,20 @@ Firepi uses a RESTful API
       * `{'response': 'success'}` - Returns a success if the temperature was set correctly
 
 ### Set a temperature curve
-The temperature curve is represented on the frontend and backend as a CSV file of 2 columns and `n` rows. The second column is the length of time in seconds(?) at a temperature given by the first column.
+The temperature curve is represented on the frontend and backend as a CSV file of 2 columns and `n` rows. The second column is the length of time in seconds at a temperature given by the first column.
 
 |     |     |
 | --- | --- |
-| 1000 | 30 |
-| 2000 | 40 |
-| 3000 | -10 |
-| 5000 | 70 |
+| 30  | 1000 |
+| 40  | 3000 |
+| -10 | 1000 |
+| 70  | 5000 |
 
 The curve can be set through a `POST` request containing the CSV data as a string.
 
 `/api/v1/tempcurve`
+* `GET`
+      * `{'curve': String}` - Returns the original temperature curve in a CSV format 
 * `POST (String csv)`
      * `{'error':'temperature curve set failure'}` - Returns an error if the curve cannot be set
      * `{'response': 'success'}` - Returns a success if the curve was set correctly
@@ -51,3 +53,16 @@ Users can request to use the chamber at certain times using an event system thro
 
 `/api/v1/event`
 * `POST (String user, int start_timestamp, int end_timestamp)` 
+
+### Com Port
+The system uses a COM port to connect from the Raspberry Pi to the temperature chamber. The number of the port is not necessarily defined. In order to make it easy to reconnect to a temperature chamber, the frontend will display a connect button if the system is currently disconnected.
+
+Users are able to select a port number and then press a button. This will reset the temperature chamber object and try to reconnect. If it fails, the website will alert you to an error. If this reconnection is successful, the connection dialog will disappear.
+
+`/api/v1/reconnect`
+* `PUT (String COM)`
+     * `{'error':'set com failure'}` - Returns an error if the connection fails
+     * `{'response': 'success'}` - Returns a success if the connection was set correctly
+* `GET`
+     * `{'port': n}` - Returns some integer n
+     * `{'error':'get com failure'}` - Returns an error if the connection fails
