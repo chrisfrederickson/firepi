@@ -14,5 +14,31 @@ a {
     display:none;   
 }
 #custom {
-    border: dashed black 2px;   
+    border: dashed black 2px;  
+    padding-bottom: 8px;
+    padding-left: 12px;
+    margin-top: 24px;
+}
+#functionDuration {
+    margin-top: 12px;
+    display: block;   
+}
+#functionDownload {
+    margin-top: 8px;   
+}
+#generate {
+   margin-left: 8px;   
+}
+#temperature {
+    margin-right:8px;   
+}
+.temperatureInput {
+    margin-right: 16px;
+    margin-left: 4px;   
+}
+.secondInput {
+    margin-left: 4px;
+}   
+#error_message {
+    color: #F44336;
 }

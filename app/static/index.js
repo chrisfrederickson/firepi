@@ -13,7 +13,15 @@ function dummyAuthenticate() {
     loadFunctionGenerator();
 }
 document.getElementById('authenticate').onclick = function(event) {
-    window.location.href = '/login';
+//    window.location.href = '/login';
+    dummyAuthenticate();
+}
+document.getElementById('comnect').onclick = function(event) {
+    switchComPort(document.getElementById('comport').value, function(result) {
+        console.log(result);
+        if(result.error !== undefined)
+            alert(result.error);
+    }); 
 }
 document.getElementById('functionDownload').onclick = function(event) {
     var temperatureRaw = temperatureProfile.toCsv();   
@@ -30,18 +38,68 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
     document.getElementById("generateHeader").innerHTML = "You can";
 }
 var temperatureProfile = new CSV();
+var connectedToTemperatureChamber = true;
 
-setInterval(function() {
-    //AJAX /GET
-    $.get('/get', {}, function(response) {
-        document.getElementById('temperature').value = response;
-    });
-}, 1000);
-document.getElementById('temperature').onchange = function() {
-    $.get('/set', {temp: document.getElementById('temperature').value}, function(response) {
-        alert(response); 
+function updateConnection(isConnected) {
+    connectedToTemperatureChamber = isConnected;
+    var items = [
+        'functionPost',
+        'temperature'
+    ];
+    for(i in items) {
+        var item = document.getElementById(items[i]);
+        console.log(item, !isConnected);
+        if(isConnected) {
+            item.removeAttribute('disabled');
+        } else {
+            item.disabled = !isConnected;
+        }
+    }
+    if(!isConnected) {
+        document.getElementById('error_message').innerHTML = "Cannot connect to temperature chamber. Please check your connection and make sure it is turned on."
+        document.getElementById('connection').style.display = 'block';
+    } else {
+        document.getElementById('error_message').innerHTML = "";
+        document.getElementById('connection').style.display = 'none';
+    }
+}
+
+function getTemperatureRequest() {
+    getTemperature(function(response) {
+        console.log(response.temp);
+        if(response.temp == null) {
+            document.getElementById('curr_temperature').innerHTML = '<span style="color:#F44336">TEMP NOT FOUND</span>';  
+            //Nothing works!
+            updateConnection(false);
+        }
+        else if(response.temp !== undefined) {
+            document.getElementById('curr_temperature').innerHTML = response.temp;  
+            updateConnection(true);
+        }
     });
 }
+
+setInterval(function() {
+    if(connectedToTemperatureChamber)
+        getTemperatureRequest();
+}, 1000);
+document.getElementById('temperature').onchange = function() {
+   /* $.get('/set', {temp: document.getElementById('temperature').value}, function(response) {
+        alert(response); 
+    });*/
+    setTemperature(document.getElementById('temperature').value, function(response) {
+        if(response.msg !== undefined)
+            alert(response.msg);
+    });
+}
+document.getElementById('functionPost').onclick = function() {
+    flush();
+    setTemperatureCurve(temperatureProfile.toCsv(), function(response) {
+        console.log('post curve', response);
+        if(response.msg !== undefined)
+            alert(response.msg);
+    });
+};
 
 
 //DND - http://www.html5rocks.com/en/tutorials/file/dndfiles/

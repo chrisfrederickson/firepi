@@ -18,7 +18,7 @@ except:
 #Requires scheduler interfaces
 import tempchamber
 try:
-    chamber = tempchamber.TempChamber()
+    chamber = tempchamber.TempChamber(5)
 except:
     print("Temperature chamber init failure!")
 

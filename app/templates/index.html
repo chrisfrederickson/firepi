@@ -16,10 +16,17 @@
         
         <div id='auth'>
             <!-- The user is authenticated, so stuff can work -->
-            <input type='number' id='temperature' value="" min="0" max="120" step="0.1"/>CURRENT<br>
+            <div id='connection'>
+                <span id='com'>COM</span>
+                <input type='number' min='0' step='1' id='comport'/>
+                <button id='comnect'>Connect</button>
+            </div>
+            
+            <input type='number' id='temperature' value="" min="0" max="120" step="0.1"/>CURRENT <span id='curr_temperature'></span><br>
+            <span id='error_message'></span>
             <div id='custom'>
                 <h2>You can</h2>
-                Upload a custom CSV file: (format TBA)
+                Upload a custom CSV file: <a href='https://github.com/chrisfrederickson/firepi/blob/master/README.md#set-a-temperature-curve' target='_blank'>(format here)</a>
                 <input type="file" id="customcsv">
                 <br>
                 Drag and drop a file
@@ -32,11 +39,13 @@
                 
                 <div id='functionGenerator'></div>
                 <span id='functionDuration'></span>
+                <button id='functionPost'>Start Curve</button>
                 <button id='functionDownload'>Download CSV</button>
             </div>
             
         </div>
         
+        <script src="../static/api.js"></script>
         <script src="../static/index.js"></script>
         <script src="../static/jquery.js"></script>
     </body>

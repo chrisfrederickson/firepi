@@ -8,7 +8,7 @@ class TempResource(Resource):
         try:
             temp = chamber.read_temp()
         except:
-            return {'error':'temperature read failure'}
+            return {'error':'temperature read failure', 'msg': 'The temperature cannot be read. Make sure your device is connected to the temperature chamber.'}
         return {'temp': temp}
     
     def put(self):
@@ -16,7 +16,7 @@ class TempResource(Resource):
             temp = request.form['temp']
             chamber.set_temp(self, temp)
         except:
-            return {'error':'temperature set failure'}
+            return {'error':'temperature set failure', 'msg': 'The temperature cannot be set. Make sure your device is connected to the temperature chamber.'}
         return {'response': 'success'}
 
 class TempCurveResource(Resource):
@@ -31,7 +31,7 @@ class TempCurveResource(Resource):
             #temp_curve = request.form['temp_curve']
             chamber.set_temp_curve(self, temp_curve)
         except:
-            return {'error':'temperature curve set failure'}
+            return {'error':'temperature curve set failure', 'msg': 'The temperature cannot be set. Make sure your device is connected to the temperature chamber.'}
         return {'response': 'success'}
     
 class EventResource(Resource):
@@ -52,6 +52,17 @@ class EventResource(Resource):
             return {'error':'add event failure'}
         return {'response':'success'}
 
+class ComResource(Resource):
+    def put(self): #Set a new port number
+        try:
+            comport = request.form['port']
+            chamber = tempchamber.TempChamber(int(comport))
+        except:
+            return {'error': 'set com failure'}
+        return {'response': 'success'}
+            
+
 api.add_resource(TempResource, '/api/v1/temp')
 api.add_resource(TempCurveResource, '/api/v1/tempcurve')
 api.add_resource(EventResource, '/api/v1/event')
+api.add_resource(ComResource, '/api/v1/reconnect')
