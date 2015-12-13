@@ -21,8 +21,12 @@ class TempResource(Resource):
 
 class TempCurveResource(Resource):
     def get(self):
-        # Get ID / user of running curve
-        pass
+        # TODO Get ID / user of running curve
+        # For we'll just get the actual curve information
+        try:
+            return {'curve': chamber.get_running_temp_curve(self)}
+        except:
+            return {'error': 'temp curve get failure', 'msg': 'The temperature curve may not exist'}
         
     def post(self):
         temp_curve = request.form['temp_curve']
@@ -53,6 +57,12 @@ class EventResource(Resource):
         return {'response':'success'}
 
 class ComResource(Resource):
+    def get(self):
+        try:
+            return {'port': chamber.get_com_port()}
+        except:
+            return {'error': 'get com failure'}
+        
     def put(self): #Set a new port number
         try:
             comport = request.form['port']

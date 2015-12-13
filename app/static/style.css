@@ -19,6 +19,28 @@ a {
     padding-left: 12px;
     margin-top: 24px;
 }
+#custom, #generate {
+    transition: 0.5s all;   
+}
+@media (min-width:800px) and (max-width: 1280px) {
+    #custom, #generate {
+        width:600px;
+        margin-left:auto;
+        margin-right:auto;
+    }
+}
+@media (min-width:1280px) {
+    #custom {
+        width: calc(50% - 18px);
+        display: inline-block;
+        vertical-align: top;
+    }
+    #generate {
+        width: calc(50% - 32px);
+        display: inline-block;
+        padding-left: 16px; 
+    }
+}
 #functionDuration {
     margin-top: 12px;
     display: block;   
@@ -41,4 +63,11 @@ a {
 }   
 #error_message {
     color: #F44336;
+    display: block;
+}
+#comport {
+    width: 48px;   
+}
+#connection {
+    margin-bottom: 16px;   
 }

@@ -2,11 +2,12 @@
     <head>
         <title>FirePi - Temperature Chamber Web Server</title>
         <link href="../static/style.css" rel="stylesheet" type="text/css"/>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
     </head>
     <body>
         <h1>FirePi - Temperature Chamber Web Server</h1>
         
-        <p>This is a web server that controls the TestEquity Model 115 Temperature Chamber at Rowan University. Written in Python and running on a Raspberry Pi, it makes it easy to run different temperature profiles on DUTs (devices under test). Whether you want a simple linear function or a complex curve with various types of easing, it is easy to generate any sort of temperature profile here or upload your own through a CSV file. Documentation for the correct CSV format is currently not available. If you want to learn how we did it, check out <a href='https://github.com/chrisfrederickson/firepi' target='_blank'>our GitHub repo</a>. This software project is part of Firefly/Mission to Mars.</p>
+        <p>This is a web server that controls the TestEquity Model 115 Temperature Chamber at Rowan University. Written in Python and running on a Raspberry Pi, it makes it easy to run different temperature profiles on DUTs (devices under test). Whether you want a simple linear function or a complex curve with various types of easing, it is easy to generate any sort of temperature profile here or upload your own through a CSV file. If you want to see how we did it, check out <a href='https://github.com/chrisfrederickson/firepi' target='_blank'>our GitHub repo</a>. This software project is part of Firefly/Mission to Mars.</p>
         
         <div id='noauth'>
             <!-- Exists by default. The user needs to authenticate. -->
@@ -41,6 +42,7 @@
                 <span id='functionDuration'></span>
                 <button id='functionPost'>Start Curve</button>
                 <button id='functionDownload'>Download CSV</button>
+                <canvas id="curve" width="400" height="400"></canvas>
             </div>
             
         </div>

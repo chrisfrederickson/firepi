@@ -14,11 +14,16 @@ function setTemperature(newTemp, callback) {
         }
     });
 }
+function getTemperatureCurve(callback) {
+    $.ajax({
+        url: endpoint+"tempcurve",
+        type: 'GET',
+        success: function(result) {
+            callback(result);
+        }
+    });
+}   
 function setTemperatureCurve(tempCurve, callback) {
-/*    $.post(endpoint+'tempcurve', {temp_curve: tempCurve}, function(response) {
-        callback(response);     
-    });*/
-
     $.ajax({
         url: endpoint+"tempcurve",
         type: 'POST',
@@ -33,6 +38,15 @@ function switchComPort(port, callback) {
         url: endpoint+"reconnect",
         type: 'PUT',
         data: {port: port},
+        success: function(result) {
+            callback(result);
+        }
+    }); 
+}
+function getComPort(callback) {
+    $.ajax({
+        url: endpoint+"reconnect",
+        type: 'GET',
         success: function(result) {
             callback(result);
         }
