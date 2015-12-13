@@ -9,10 +9,12 @@ Here's how to set up the system:
 * Download Python
     * Set up your system environment variables
 * Navigate to project folder
-* pip install -r requirements.txt
+* Run `pip install -r requirements.txt` in a console
 * Update `app/tempchamber.py` to use the correct COM port (see <a href='https://github.com/chrisfrederickson/firepi/issues/20'>this issue</a>)
-* Go to the Google Developer Console and set up your environment variables
-    * See `app/settings.py` for the variables you need 
+* Go to the Google Developer Console
+    * Create the API credentials for OAuth. Get the developer id and keys
+    * Set up your environment variables
+        * See `app/settings.py` for the variables you need 
 * Execute `python run.py`
     * It should appear at <a href='http://127.0.0.1:5000'>127.0.0.1:5000</a> 
 
